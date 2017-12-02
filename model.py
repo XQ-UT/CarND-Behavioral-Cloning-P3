@@ -27,16 +27,33 @@ print('y_train shape: {}'.format(y_train.shape))
 
 import keras
 from keras.models import Sequential
-from keras.layers import Flatten, Dense, Conv2D, Lambda
+from keras.layers import Flatten, Dense, Conv2D, Lambda, Dropout, Activation, BatchNormalization
 from keras.optimizers import Adam
 
 print('Keras Version: {}'.format(keras.__version__))
 
 model = Sequential()
 model.add(Lambda(lambda x: x/255.0 -0.5, input_shape=(160, 320, 3)))
-model.add(Conv2D(filters=5, kernel_size=[5,5], strides=[2,2], activation='relu', padding='valid'))
-model.add(Conv2D(filters=10, kernel_size=[3,3], strides=[2,2], activation='relu', padding='valid'))
-model.add(Conv2D(filters=10, kernel_size=[3,3], strides=[2,2], activation='relu', padding='valid'))
+
+# Output: 78 x 158 x 10
+model.add(Conv2D(filters=10, kernel_size=[5,5], strides=[2,2], padding='valid'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Dropout(rate=0.2))
+
+# Output: 37 x 77 x 15
+model.add(Conv2D(filters=15, kernel_size=[5,5], strides=[2,2], padding='valid'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Dropout(rate=0.2))
+
+# Output: 18 x 38 x 20
+model.add(Conv2D(filters=20, kernel_size=[3,3], strides=[2,2], padding='valid'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Dropout(rate=0.2))
+
+# Input: 13680
 model.add(Flatten())
 model.add(Dense(1024))
 model.add(Dense(256))
