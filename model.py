@@ -14,11 +14,17 @@ for line in lines:
     source_path = line[0]
     filename = source_path.split('/')[-1]
     current_path = './data/track1/IMG/' + filename
-    image = cv2.imread(current_path)
-    images.append(image)
 
+    image = cv2.imread(current_path)
     measurement = float(line[3])
+    images.append(image)
     measurements.append(measurement)
+
+    # flip img
+    image_flipped = np.fliplr(image)
+    measurement_flipped = -measurement
+    images.append(image_flipped)
+    measurements.append(measurement_flipped)
 
 X_train = np.array(images)
 y_train = np.array(measurements)
@@ -27,36 +33,34 @@ print('y_train shape: {}'.format(y_train.shape))
 
 import keras
 from keras.models import Sequential
-from keras.layers import Flatten, Dense, Conv2D, Lambda, Dropout, Activation, BatchNormalization
+from keras.layers import Flatten, Dense, Conv2D, Lambda, Dropout, Activation, BatchNormalization, Cropping2D
 from keras.optimizers import Adam
 
 print('Keras Version: {}'.format(keras.__version__))
 
 model = Sequential()
-model.add(Lambda(lambda x: x/255.0 -0.5, input_shape=(160, 320, 3)))
+model.add(Cropping2D(cropping=((50,20), (0,0)), input_shape=(160, 320, 3)))
+model.add(Lambda(lambda x: x/255.0 - 0.5))
 
-# Output: 78 x 158 x 10
 model.add(Conv2D(filters=10, kernel_size=[5,5], strides=[2,2], padding='valid'))
 model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(Dropout(rate=0.2))
 
-# Output: 37 x 77 x 15
 model.add(Conv2D(filters=15, kernel_size=[5,5], strides=[2,2], padding='valid'))
 model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(Dropout(rate=0.2))
 
-# Output: 18 x 38 x 20
 model.add(Conv2D(filters=20, kernel_size=[3,3], strides=[2,2], padding='valid'))
 model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(Dropout(rate=0.2))
 
-# Input: 13680
 model.add(Flatten())
 model.add(Dense(1024))
 model.add(Dense(256))
+model.add(Dense(64))
 model.add(Dense(1))
 
 adam = Adam(lr=0.001, decay=0.01)
