@@ -78,6 +78,7 @@ test_generator = generator(test_samples, batch_size=32)
 #  Model Definition
 #-----------------------------------------
 import keras
+from keras.callbacks import ModelCheckpoint
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Conv2D, Lambda, Dropout, Activation, BatchNormalization, Cropping2D
 from keras.optimizers import Adam
@@ -114,7 +115,9 @@ model.add(Dense(1))
 #------------------------------------
 #  Train model
 #------------------------------------
+checkpointer = ModelCheckpoint(filepath='ckpt/model.hdf5', verbose=1, save_best_only=True)
 adam = Adam(lr=0.001)
+
 model.compile(loss='mean_squared_error', optimizer=adam)
 hist  = model.fit_generator(
     generator = train_generator,
@@ -122,6 +125,7 @@ hist  = model.fit_generator(
     validation_data = validation_generator,
     validation_steps = math.ceil(len(validation_samples) / 32.0),
     epochs = 20, 
+    callbacks=[checkpointer],
 )
 model.save('model.h5')
 print('Training History: ')
