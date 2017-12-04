@@ -4,10 +4,14 @@ import math
 import numpy as np
 
 
-def read_samples_from_csv(csv_file, samples):
+def read_samples_from_csv(data_dir, samples):
+    csv_file = data_dir + '/driving_log.csv' 
     with open(csv_file) as csvfile:
         reader = csv.reader(csvfile)
         for sample in reader:
+            for i in range(0,3):
+                if data_dir not in sample[i]:
+                    sample[i] = data_dir + '/IMG/' + sample[i].strip().split('/')[-1]
             samples.append(sample)
 
 from sklearn.utils import shuffle
@@ -48,12 +52,16 @@ def generator(samples, batch_size=32):
 #  Generate Training, Validation and 
 #  Testing data.
 #--------------------------------------
-track1_csv_file = './data/track1/driving_log.csv'
-reversed_track1_csv_file = './data/track1_reversed/driving_log.csv'
+track1_dir = 'data/track1'
+reversed_track1_dir = 'data/track1_reversed'
+udacity_dir = 'data/udacity'
+
 samples = []
 
-read_samples_from_csv(track1_csv_file, samples)
-read_samples_from_csv(reversed_track1_csv_file, samples)
+# read_samples_from_csv(track1_dir, samples)
+# read_samples_from_csv(reversed_track1_dir, samples)
+read_samples_from_csv(udacity_dir, samples)
+
 
 from sklearn.model_selection import train_test_split
 train_samples, test_samples = train_test_split(samples, test_size=0.1)
