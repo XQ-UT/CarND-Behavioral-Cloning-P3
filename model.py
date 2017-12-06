@@ -15,6 +15,7 @@ def read_samples_from_csv(data_dir, samples):
             samples.append(sample)
 
 from sklearn.utils import shuffle
+import os.path
 def generator(samples, batch_size=32):
     num_samples = len(samples)
     while 1: # Loop forever so the generator never terminates
@@ -33,6 +34,10 @@ def generator(samples, batch_size=32):
                         steering_bias = -0.2
 
                     image_path = batch_sample[i]
+                    if(not os.path.exists(image_path)):
+                        print('Image: {} does not exist.'.format(image_path))
+                        continue
+
                     image = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
                     angle = steering_bias + float(batch_sample[3])
                     images.append(image)
@@ -106,9 +111,9 @@ model.add(Activation('relu'))
 model.add(Dropout(rate=0.2))
 
 model.add(Flatten())
-model.add(Dense(1024))
-model.add(Dense(256))
-model.add(Dense(64))
+model.add(Dense(1024, activation = 'relu'))
+model.add(Dense(256, activation = 'relu'))
+model.add(Dense(64, activation = 'relu'))
 model.add(Dense(1))
 
 
@@ -133,13 +138,13 @@ print(hist.history)
 
 
 #---------------------------------------
-#   Predict on test data 
+#   Evaluate on test data 
 #----------------------------------------
-hist = model.predict_generator(
+test_loss = model.evaluate_generator(
     generator = test_generator,    
     steps = math.ceil(len(test_samples) / 32.0),
 )
-print('Test History: ')
-print(hist.history)
+print('Test Loss: ')
+print(test_loss)
 
 
