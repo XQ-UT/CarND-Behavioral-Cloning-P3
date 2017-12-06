@@ -16,38 +16,52 @@ def read_samples_from_csv(data_dir, samples):
 
 from sklearn.utils import shuffle
 import os.path
+import random
+HIGHER_ANGLE_THRESHOLD = 0.25
+HIGHER_ANGLE_PROBABILITY = 0.5
+"""
+Return (image_path, angle) with sub-sampling.
+"""
+def get_one_sample(sample):
+    should_get_higher_angle = random.uniform(0, 1) <= HIGHER_ANGLE_PROBABILITY
+    for i in range(0, 3):
+        steering_bias = 0.0
+        if i == 1:
+            steering_bias = 0.25
+        elif i == 2:
+            steering_bias = -0.25
+
+        image_path = sample[i]
+        angle = steering_bias + float(sample[3])
+        if should_get_higher_angle and abs(angle) < HIGHER_ANGLE_THRESHOLD:
+            continue
+        return (image_path, angle)
+
+
+    
 def generator(samples, batch_size=32):
     num_samples = len(samples)
     while 1: # Loop forever so the generator never terminates
         shuffle(samples)
         for offset in range(0, num_samples, batch_size):
             batch_samples = samples[offset:offset+batch_size]
-
             images = []
             angles = []
-            for batch_sample in batch_samples:
-                for i in range(0, 3):
-                    steering_bias = 0.0
-                    if i == 1:
-                        steering_bias = 0.2
-                    elif i == 2:
-                        steering_bias = -0.2
+            for sample in batch_samples:
+                image_path, angle = get_one_sample(sample)
+                if(not os.path.exists(image_path)):
+                    print('Image: {} does not exist.'.format(image_path))
+                    continue
 
-                    image_path = batch_sample[i]
-                    if(not os.path.exists(image_path)):
-                        print('Image: {} does not exist.'.format(image_path))
-                        continue
+                image = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
+                images.append(image)
+                angles.append(angle)
 
-                    image = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
-                    angle = steering_bias + float(batch_sample[3])
-                    images.append(image)
-                    angles.append(angle)
-
-                    # Flip Image
-                    image_flipped = np.fliplr(image)
-                    angle_flipped = - angle
-                    images.append(image_flipped)
-                    angles.append(angle_flipped)
+                # Flip Image
+                image_flipped = np.fliplr(image)
+                angle_flipped = - angle
+                images.append(image_flipped)
+                angles.append(angle_flipped)
 
             X_train = np.array(images)
             y_train = np.array(angles)
@@ -71,9 +85,9 @@ read_samples_from_csv(udacity_dir, samples)
 from sklearn.model_selection import train_test_split
 train_samples, test_samples = train_test_split(samples, test_size=0.1)
 train_samples, validation_samples = train_test_split(train_samples, test_size=0.2)
-print('Training sample size: 6 x {}'.format(len(train_samples)))
-print('Validation sample size: 6 x {}'.format(len(validation_samples)))
-print('Testing sample size: 6 x {}'.format(len(test_samples)))
+print('Training sample size: 2 x {}'.format(len(train_samples)))
+print('Validation sample size: 2 x {}'.format(len(validation_samples)))
+print('Testing sample size: 2 x {}'.format(len(test_samples)))
 
 train_generator = generator(train_samples, batch_size=32)
 validation_generator = generator(validation_samples, batch_size=32)
