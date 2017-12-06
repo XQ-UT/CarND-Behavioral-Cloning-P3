@@ -10,8 +10,7 @@ def read_samples_from_csv(data_dir, samples):
         reader = csv.reader(csvfile)
         for sample in reader:
             for i in range(0,3):
-                if data_dir not in sample[i]:
-                    sample[i] = data_dir + '/IMG/' + sample[i].strip().split('/')[-1]
+                sample[i] = data_dir + '/IMG/' + sample[i].strip().split('/')[-1]
             samples.append(sample)
 
 from sklearn.utils import shuffle
@@ -49,7 +48,7 @@ def generator(samples, batch_size=32):
             angles = []
             for sample in batch_samples:
                 if not os.path.exists(sample[0]):
-                    print('Image: {} does not exist.'.format(image_path))
+                    print('Image: {} does not exist.'.format(sample[0]))
                     continue
 
                 image_path, angle = get_one_sample(sample)
@@ -79,7 +78,7 @@ samples = []
 
 read_samples_from_csv(track1_dir, samples)
 read_samples_from_csv(reversed_track1_dir, samples)
-# read_samples_from_csv(udacity_dir, samples)
+read_samples_from_csv(udacity_dir, samples)
 
 
 from sklearn.model_selection import train_test_split
