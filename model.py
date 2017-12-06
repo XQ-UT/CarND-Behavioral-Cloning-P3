@@ -48,11 +48,11 @@ def generator(samples, batch_size=32):
             images = []
             angles = []
             for sample in batch_samples:
-                image_path, angle = get_one_sample(sample)
-                if(not os.path.exists(image_path)):
+                if not os.path.exists(sample[0]):
                     print('Image: {} does not exist.'.format(image_path))
                     continue
 
+                image_path, angle = get_one_sample(sample)
                 image = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
                 images.append(image)
                 angles.append(angle)
@@ -77,9 +77,9 @@ udacity_dir = 'data/udacity'
 
 samples = []
 
-# read_samples_from_csv(track1_dir, samples)
-# read_samples_from_csv(reversed_track1_dir, samples)
-read_samples_from_csv(udacity_dir, samples)
+read_samples_from_csv(track1_dir, samples)
+read_samples_from_csv(reversed_track1_dir, samples)
+# read_samples_from_csv(udacity_dir, samples)
 
 
 from sklearn.model_selection import train_test_split
@@ -146,7 +146,6 @@ hist  = model.fit_generator(
     epochs = 20, 
     callbacks=[checkpointer],
 )
-model.save('model.h5')
 print('Training History: ')
 print(hist.history)
 
