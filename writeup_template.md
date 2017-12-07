@@ -109,3 +109,30 @@ The training loss and validation loss during training process are shown above. T
 
 ## Improvements
 
+At first the trained car had problem to take large turns, especially the sharp turns after bridge. The is due to training data bais. As Figure 1 shows, most of angles are around 0, therefore the car always tended to make smaller turns. 
+
+To avoid this, we use sub-sampling in our generator to get larger angles with higher probabilities. Besides, by utilizing left and right cameras, we will have more data with higher steering angles. For left images, we will give ```angle = center_angle -0.25```. Similarly, we will assign ```angle = center_angle + 0.25``` for right images. The generator code is shown as below:
+
+```python
+   HIGHER_ANGLE_THRESHOLD = 0.25
+   HIGHER_ANGLE_PROBABILITY = 0.5
+   """
+   Return (image_path, angle) with sub-sampling.
+   """
+   def get_one_sample(sample):
+      should_get_higher_angle = random.uniform(0, 1) <= HIGHER_ANGLE_PROBABILITY
+      for i in range(0, 3):
+          steering_bias = 0.0
+          if i == 1:
+              steering_bias = 0.25
+          elif i == 2:
+              steering_bias = -0.25
+ 
+          image_path = sample[i]
+          angle = steering_bias + float(sample[3])
+          if should_get_higher_angle and abs(angle) < HIGHER_ANGLE_THRESHOLD:
+              continue
+          return (image_path, angle)
+```
+
+With this sub-sampling technique, the car can make lager turns easily.
