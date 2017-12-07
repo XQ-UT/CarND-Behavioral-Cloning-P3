@@ -98,7 +98,14 @@ To train this network, we use ```Adam``` optimizer with learning rate of **0.001
 ```
 Besides, since we have more than 20k images, it is easy to overwhelm memory usage. To avoid that, we use python generator to produce image data for each batch.
 
-## Evaluation Result
+## Evaluation Model
+<p align="center">
+  <img src="report/training_val_loss.jpg" width="500" height="300"/>
+  <br>
+  <em>Figure 4: Training and validation loss</em>
+</p>
+
+The training loss and validation loss during training process are shown above. The final test loss is **0.017658**.
 
 ## Improvements
 
