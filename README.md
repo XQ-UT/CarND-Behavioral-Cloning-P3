@@ -53,7 +53,12 @@ The images after cropping are shown as below:
   <em>Figure 3: Cropped Sample Camera Images</em>
 </p>
 
-Another data augument I did is to flip images and angles. In this way, we can increase the data size to 2x.
+Futhermore, all the pixel values are normalized by adding a Lambda layer to the model:
+```python
+model.add(Lambda(lambda x: x/255.0 - 0.5))
+```
+
+Another data augument I did is to flip images and angles. In this way, we can increase the data size to 2X.
 
 ## Model Architecture
 
@@ -63,6 +68,7 @@ The architecture of the network is shown as below:
 |:---------------------:|:---------------------------------------------:| 
 | Input         		    | 160 x 320 x 3   						                	| 
 | Cropping             	| Upper 50 and lower 20 pixels are cropped out 	| 
+| Normalization         | x/255.0 - 0.5                               	| 
 | Convolution 5x5     	| 24 filters, 2x2 stride, valid padding         |
 | Batch Normalization   |                                               |
 | RELU					        |												                        |
