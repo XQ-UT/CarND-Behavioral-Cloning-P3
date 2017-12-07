@@ -13,6 +13,9 @@ The goals / steps of this project are the following:
 Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
 
 ---
+## Final Model
+The **model.h5** file excceed GitHub's 100MB limit. So I put it in [Google Drive](https://drive.google.com/file/d/1otoCbUJT3LkI9-vRIU5K7zkbzKa8XlbQ/view?usp=sharing).
+
 ## Dataset Summary
 The data I used for training the model are collected from track 1 by mannually driving for one clockwise loop and counter-clockwise loop. Additionally, I also include dataset from Udacity.
 
