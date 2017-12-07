@@ -21,7 +21,7 @@ The data I used for training the model are collected from track 1 by mannually d
 | Training Data Size   | 17950   					 | 
 | Validation Data Size | 4488	             |
 | Test Data Size       | 2494	             |
-| Image Shape          | 160 x 320 x	3		 |
+| Image Shape          | 160 x 320 x 3		 |
 
 The streering angles distribution are shown in Figure 1. As we can see, for the track 1, there are more negative steering angles while counter-clockwise loop has more positive steering angles. Overall, the data is not evenly distributed and the majority of steering angles are around 0.
 <p align="center">
@@ -39,83 +39,66 @@ The data is evenly distributed for left, center and right images. Sample images 
 
 ## Data Preprocessing
 
-## Model Architecture and Training Strategy
+Looking at the sample images, the upper and lower portions are irrelevant. So we are cropping those out by adding a cropping layer to the model:
+```python
+model.add(Cropping2D(cropping=((50,20), (0,0)), input_shape=(160, 320, 3)))
+```
+The images after cropping are shown as below:
+<p align="center">
+  <img src="report/cropped_imgs.jpg" width="1000" height="300"/>
+  <br>
+  <em>Figure 3: Cropped Sample Camera Images</em>
+</p>
+
+Another data augument I did is to flip images and angles. In this way, we can increase the data size to 2x.
+
+## Model Architecture
+
+The architecture of the network is shown as below:
+
+| Layer         	    	|     Description	        		            			| 
+|:---------------------:|:---------------------------------------------:| 
+| Input         		    | 160 x 320 x 3   						                	| 
+| Cropping             	| Upper 50 and lower 20 pixels are cropped out 	| 
+| Convolution 5x5     	| 24 filters, 2x2 stride, valid padding         |
+| Batch Normalization   |                                               |
+| RELU					        |												                        |
+| Dropout               | 0.2 dropout rate                              |
+| Convolution 5x5 	    | 36 filters, 2x2 stride, valid padding       	|
+| Batch Normalization   |                                               |
+| RELU					        |												                        |
+| Dropout               | 0.2 dropout rate                              |
+| Convolution 3x3 	    | 48 filters, 2x2 stride, valid padding       	|
+| Batch Normalization   |                                               |
+| RELU					        |												                        |
+| Dropout               | 0.2 dropout rate                              | 
+| Flatten 	        	  |             									                |
+| Fully connected		    | output 1024, ReLu Activation					        |
+| Fully connected		    | output 256, ReLu Activation			  		        |        								            
+| Fully connected		    | output 64, ReLu Activation                    |
+| Fully connected		    | output 1        								              |
+| MSE                   |                                               |
+
+## Training Strategy
+
+To train this network, we use ```Adam``` optimizer with learning rate of **0.001** for **20** epochs. To get the best model, we save the checking point after each epoch with best validation error. This can be easily implemented using keras:
+```python
+ checkpointer = ModelCheckpoint(filepath='ckpt/model.hdf5', verbose=1, save_best_only=True)
+ adam = Adam(lr=0.001)
+ 
+ model.compile(loss='mean_squared_error', optimizer=adam)
+ hist  = model.fit_generator(
+      generator = train_generator,
+      steps_per_epoch = math.ceil(len(train_samples) / 32.0),
+      validation_data = validation_generator,
+      validation_steps = math.ceil(len(validation_samples) / 32.0),
+      epochs = 20,
+      callbacks=[checkpointer],
+   )
+```
+Besides, since we have more than 20k images, it is easy to overwhelm memory usage. To avoid that, we use python generator to produce image data for each batch.
 
 ## Evaluation Result
 
+## Improvements
 
-####1. An appropriate model architecture has been employed
-
-My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
-
-The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
-
-####2. Attempts to reduce overfitting in the model
-
-The model contains dropout layers in order to reduce overfitting (model.py lines 21). 
-
-The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
-
-####3. Model parameter tuning
-
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
-
-####4. Appropriate training data
-
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
-
-For details about how I created the training data, see the next section. 
-
-###Model Architecture and Training Strategy
-
-####1. Solution Design Approach
-
-The overall strategy for deriving a model architecture was to ...
-
-My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
-
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
-
-To combat the overfitting, I modified the model so that ...
-
-Then I ... 
-
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
-
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
-
-####2. Final Model Architecture
-
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
-
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
-
-![alt text][image1]
-
-####3. Creation of the Training Set & Training Process
-
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
-
-![alt text][image2]
-
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
-
-![alt text][image3]
-![alt text][image4]
-![alt text][image5]
-
-Then I repeated this process on track two in order to get more data points.
-
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
-
-![alt text][image6]
-![alt text][image7]
-
-Etc ....
-
-After the collection process, I had X number of data points. I then preprocessed this data by ...
-
-
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
-
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
